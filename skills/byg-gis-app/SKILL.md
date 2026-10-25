@@ -293,7 +293,7 @@ Alle kilderne nedenfor kræver ingen nøgle og tillader kald fra browseren. Koor
 - Kredit: "Kilde: Danmarks Statistik".
 
 ### Kommunegrænser (statisk fil)
-- Adresse: `https://steenhulthin.github.io/byg-din-egen-gis-applikation/kommuneinddeling.geojson`, ca. 0,5 MB, WGS84 og 99 kommuner.
+- Adresse: `https://steenhulthin.github.io/byg-din-egen-gis-applikation/data/kommuneinddeling.geojson`, ca. 0,5 MB, WGS84 og 99 kommuner.
 - Felter:
   - `navn`, fx `"Aalborg"`
   - `kommunekode`: 4-cifret, fx `"0851"`, som DMI bruger
@@ -303,7 +303,7 @@ Alle kilderne nedenfor kræver ingen nøgle og tillader kald fra browseren. Koor
   - **Koropletkort** med Statbank-tal: kobl Statbanks kode til `lau1vaerdi`.
   - **Zoom til en kommune**: find featuren med `navn` og beregn dens udstrækning.
   - **Kommunegrænse** som tynd linje over andre data.
-- Kredit: "Indeholder data fra Klimadatastyrelsen, DAGI".
+- Kredit: "Indeholder data fra Klimadatastyrelsen, DAGI, 26. april 2026".
 
 ### Vejdirektoratet (trafiktællinger)
 - Adresse: `https://vmgeoserver.vd.dk/geosmastra/opendata/ows`
