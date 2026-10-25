@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "checkpoint-a": "node tests/checkpoint-a/run.mjs",
-    "test": "node --test tests/checkpoint-a/*.test.mjs"
+    "test": "node --test tests/checkpoint-a/*.test.mjs tests/slides/*.test.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1"
+    "@playwright/test": "1.64.1",
+    "jsqr": "1.4.0"
   }
 }
