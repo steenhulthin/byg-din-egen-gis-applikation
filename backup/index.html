@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stille hoteller i Aalborg</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+  #kort { position: fixed; inset: 0; height: 100dvh; }
+  #titel { position: fixed; top: 0; left: 0; right: 0; z-index: 2; margin: 0; padding: 8px 12px;
+           font-size: 1.1rem; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #besked { position: fixed; top: 48px; left: 12px; right: 12px; z-index: 2; display: none;
+            padding: 8px 12px; background: #fff3cd; border-radius: 6px; }
+  .maplibregl-popup-content { max-width: min(300px, 85vw); max-height: 50dvh; overflow: auto; }
+  .popup-titel { font-weight: 600; margin: 0 0 4px; }
+  .popup-linje { margin: 2px 0; }
+  .popup-note { margin: 8px 0 0; font-size: .8rem; color: #555; }
+  #forklaring { position: fixed; left: 12px; bottom: 12px; z-index: 2; padding: 8px 12px;
+                background: rgba(255,255,255,.92); border-radius: 6px; font-size: .9rem; }
+  #forklaring div { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+  #forklaring span { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<h1 id="titel">Stille hoteller i Aalborg</h1>
+<div id="besked" role="status"></div>
+<div id="kort"></div>
+<div id="forklaring">
+  <div><span style="background:#2e7d32"></span>Stille (under 55 dB om natten)</div>
+  <div><span style="background:#f9a825"></span>Mellem (55–64 dB)</div>
+  <div><span style="background:#c62828"></span>Støjende (65 dB og over)</div>
+  <div><span style="background:#9e9e9e"></span>Ingen støjdata</div>
+</div>
+<script>
+const kort = new maplibregl.Map({
+  container: 'kort',
+  style: 'https://tiles.openfreemap.org/styles/positron',
+  bounds: [[9.7, 56.9], [10.2, 57.2]], // [[vest, syd], [øst, nord]] for Aalborg Kommune
+  attributionControl: false
+});
+kort.addControl(new maplibregl.AttributionControl({
+  compact: false, // kreditering skal altid være synlig
+  customAttribution: ['© OpenStreetMap-bidragydere (ODbL)', 'Støjkortlægning, Miljøstyrelsen (CC BY 4.0)']
+}));
+kort.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+function visBesked(tekst) {
+  const el = document.getElementById('besked');
+  el.textContent = tekst;
+  el.style.display = 'block';
+}
+
+function skjulBesked() {
+  document.getElementById('besked').style.display = 'none';
+}
+
+// læs: hvordan svaret læses (standard JSON); valg: fx { method: 'POST', body } til Overpass
+async function hentData(navn, url, læs = svar => svar.json(), valg) {
+  try {
+    const svar = await fetch(url, valg);
+    if (!svar.ok) throw new Error(navn + ' svarede ' + svar.status);
+    return await læs(svar);
+  } catch (fejl) {
+    console.error(fejl);
+    visBesked('Kunne ikke hente data fra ' + navn + '. Prøv at genindlæse siden.');
+    return null;
+  }
+}
+
+// Hoteller, gæstehuse og vandrerhjem i Aalborg Kommune fra OpenStreetMap
+const HOTEL_FORESPØRGSEL = '[out:json][timeout:60];area["name"="Aalborg Kommune"]["admin_level"="7"]->.a;'
+  + 'nwr["tourism"~"^(hotel|guest_house|hostel)$"](area.a);out center tags;';
+
+async function hentHoteller() {
+  const data = await hentData('OpenStreetMap', 'https://overpass-api.de/api/interpreter', undefined,
+    { method: 'POST', body: 'data=' + encodeURIComponent(HOTEL_FORESPØRGSEL) });
+  if (!data || !data.elements) return [];
+  return data.elements
+    .map(e => ({
+      lon: e.lon ?? e.center?.lon,
+      lat: e.lat ?? e.center?.lat,
+      navn: e.tags?.name || 'Uden navn',
+      type: e.tags?.tourism
+    }))
+    .filter(h => h.lon && h.lat);
+}
+
+// Højeste dB-værdi i svaret. Bruger feltet db_low, hvis det findes.
+function højesteDb(features) {
+  let højeste = null;
+  for (const f of features) {
+    const p = f.properties || {};
+    let værdi = null;
+    if ('db_low' in p) {
+      værdi = Number(p.db_low);
+    } else {
+      for (const v of Object.values(p)) {
+        if (typeof v === 'number' || (typeof v === 'string' && v.trim() !== '')) {
+          const n = Number(v);
+          if (Number.isFinite(n) && (værdi === null || n > værdi)) værdi = n;
+        }
+      }
+    }
+    if (Number.isFinite(værdi) && (højeste === null || værdi > højeste)) højeste = værdi;
+  }
+  return højeste;
+}
+
+// Returnerer et tal (dB), null (intet træf) eller undefined (fejl)
+async function støjVed(lon, lat, lag, radius) {
+  const cql = `DWITHIN(wkb_geometry,SRID=4326;POINT(${lon} ${lat}),${radius},meters)`;
+  const url = 'https://wfs2-miljoegis.mim.dk/stoej/ows?service=WFS&version=2.0.0&request=GetFeature'
+    + '&outputFormat=application/json&typeNames=stoej:' + lag
+    + '&cql_filter=' + encodeURIComponent(cql);
+  const data = await hentData('MiljøGIS støjdata', url);
+  if (!data || !data.features) return undefined;
+  return data.features.length ? højesteDb(data.features) : null;
+}
+
+// Støj for ét hotel: 'natten' (Lnight) og 'døgn' (Lden)
+// Værdier: tal i dB, 'lav' (under laveste bbånd), 'ingen' (uden for kortlægningen), 'fejl'
+async function hentStøj(h) {
+  const resultat = {};
+  const lag = { natten: 'b4_dk_aggroad_lnight', døgn: 'b2_dk_aggroad_lden' };
+  for (const nøgle of Object.keys(lag)) {
+    const nær = await støjVed(h.lon, h.lat, lag[nøgle], 20);
+    if (nær === undefined) { resultat[nøgle] = 'fejl'; continue; }
+    if (nær !== null) { resultat[nøgle] = nær; continue; }
+    const langt = await støjVed(h.lon, h.lat, lag[nøgle], 500);
+    if (langt === undefined) resultat[nøgle] = 'fejl';
+    else if (langt === null) resultat[nøgle] = 'ingen';
+    else resultat[nøgle] = 'lav';
+  }
+  return resultat;
+}
+
+// Kør opgaverne med højst n ad gangen
+async function kørMedGrænse(liste, n, opgave) {
+  const resultater = [];
+  let næste = 0;
+  async function arbejder() {
+    while (næste < liste.length) {
+      const i = næste++;
+      resultater[i] = await opgave(liste[i]);
+    }
+  }
+  await Promise.all(Array.from({ length: n }, arbejder));
+  return resultater;
+}
+
+function kategori(værdi) {
+  if (typeof værdi === 'number') return værdi < 55 ? 'stille' : værdi < 65 ? 'mellem' : 'støjende';
+  if (værdi === 'lav') return 'stille';
+  return 'ingen';
+}
+
+function niveauTekst(værdi) {
+  if (typeof værdi === 'number') return Math.round(værdi) + ' dB';
+  if (værdi === 'lav') return 'under 50 dB (laveste bånd)';
+  if (værdi === 'ingen') return 'Ingen støjdata';
+  return 'Kunne ikke hentes';
+}
+
+function visPopup(e) {
+  const p = e.features[0].properties;
+  const typeTekst = { hotel: 'Hotel', guest_house: 'Gæstehus', hostel: 'Vandrerhjem' }[p.type] || '';
+
+  const indhold = document.createElement('div');
+  const titel = document.createElement('p');
+  titel.className = 'popup-titel';
+  titel.textContent = p.navn;
+  indhold.appendChild(titel);
+
+  const type = document.createElement('p');
+  type.className = 'popup-linje';
+  type.textContent = typeTekst;
+  indhold.appendChild(type);
+
+  const nat = document.createElement('p');
+  nat.className = 'popup-linje';
+  nat.textContent = 'Støj om natten (kl. 23–07): ' + niveauTekst(p.natten);
+  indhold.appendChild(nat);
+
+  const døgn = document.createElement('p');
+  døgn.className = 'popup-linje';
+  døgn.textContent = 'Støj på døgnniveau (Lden): ' + niveauTekst(p.døgn);
+  indhold.appendChild(døgn);
+
+  const note = document.createElement('p');
+  note.className = 'popup-note';
+  note.textContent = 'Modelleret vejstøj ved facaden mod vejen, i 5 dB-bånd. Ikke målinger.';
+  indhold.appendChild(note);
+
+  new maplibregl.Popup()
+    .setLngLat(e.lngLat)
+    .setDOMContent(indhold)
+    .addTo(kort);
+}
+
+kort.on('load', async () => {
+  visBesked('Indlæser hoteller …');
+  const hoteller = await hentHoteller();
+  if (!hoteller.length) {
+    visBesked('Ingen hoteller fundet i Aalborg Kommune.');
+    return;
+  }
+
+  visBesked('Henter støjdata for ' + hoteller.length + ' hoteller …');
+  const med_støj = await kørMedGrænse(hoteller, 5, async h => ({ ...h, ...(await hentStøj(h)) }));
+
+  const features = med_støj.map(h => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [h.lon, h.lat] },
+    properties: {
+      navn: h.navn,
+      type: h.type,
+      natten: h.natten ?? 'fejl',
+      døgn: h.døgn ?? 'fejl',
+      kategori: kategori(h.natten)
+    }
+  }));
+
+  kort.addSource('hoteller', { type: 'geojson', data: { type: 'FeatureCollection', features: features } });
+  kort.addLayer({
+    id: 'hoteller-punkter', type: 'circle', source: 'hoteller',
+    paint: {
+      'circle-radius': 7,
+      'circle-stroke-width': 1.5,
+      'circle-stroke-color': '#ffffff',
+      'circle-color': ['match', ['get', 'kategori'],
+        'stille', '#2e7d32',
+        'mellem', '#f9a825',
+        'støjende', '#c62828',
+        '#9e9e9e']
+    }
+  });
+
+  kort.on('click', 'hoteller-punkter', e => visPopup(e));
+  kort.on('mouseenter', 'hoteller-punkter', () => kort.getCanvas().style.cursor = 'pointer');
+  kort.on('mouseleave', 'hoteller-punkter', () => kort.getCanvas().style.cursor = '');
+
+  skjulBesked();
+});
+</script>
+</body>
+</html>
