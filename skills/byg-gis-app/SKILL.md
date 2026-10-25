@@ -303,7 +303,7 @@ Alle kilderne nedenfor kræver ingen nøgle og tillader kald fra browseren. Koor
   - **Koropletkort** med Statbank-tal: kobl Statbanks kode til `lau1vaerdi`.
   - **Zoom til en kommune**: find featuren med `navn` og beregn dens udstrækning.
   - **Kommunegrænse** som tynd linje over andre data.
-- Kredit: "Indeholder data fra Klimadatastyrelsen, DAGI, 26. april 2026".
+- Kredit: "Indeholder data fra Klimadatastyrelsen, DAGI, 25. oktober 2026".
 
 ### Vejdirektoratet (trafiktællinger)
 - Adresse: `https://vmgeoserver.vd.dk/geosmastra/opendata/ows`
