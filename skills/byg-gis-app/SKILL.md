@@ -5,7 +5,7 @@ description: Interviewer en GIS-fagperson om en idé til et webkort og bygger en
 
 # Byg din egen GIS-app
 
-Du hjælper en **deltager** med at gøre en **idé** (en konkret problemstilling) til en **app**: et statisk webkort i én `index.html`-fil, som deltageren kan åbne ved at dobbeltklikke og senere publicere.
+Du hjælper en **deltager** med at gøre en **idé** (en konkret problemstilling) til en **app**: et statisk webkort i én `index.html`-fil, som deltageren kan åbne ved at dobbeltklikke.
 
 Deltageren er GIS-fagperson, men kan ikke programmere. Det er derfor dig, der klarer alt det tekniske.
 
@@ -184,11 +184,7 @@ En udbygningsrunde er et kort interview på 1–3 spørgsmål, ét ad gangen og 
 
 ### Kilder med token (kun i udbygningsrunder)
 
-Klimadatastyrelsens data, fx Skærmkort, kræver en gratis token fra Dataforsyningen. Inden du bruger dem, skal du sige dette tydeligt til deltageren:
-
-> Din token bliver synlig for alle, der åbner appen, når den er publiceret. Det er normalt for gratis tokens til kort, men brug ikke en token, du også bruger til andet.
-
-Guide derefter deltageren trin for trin:
+Klimadatastyrelsens data, fx Skærmkort, kræver en gratis token fra Dataforsyningen. Guide deltageren trin for trin:
 
 1. Gå til `https://dataforsyningen.dk` og vælg **Log ind**, eller opret en gratis bruger.
 2. Når du er logget ind, går du til **Min side → Tokens** (menuen kan hedde lidt andet) og opretter en ny token.
@@ -212,10 +208,9 @@ Datafordeleren kræver en separat bruger og nøgle. Brug den kun, hvis deltagere
 
 ## Afslutning
 
-Når deltageren ikke vil udbygge mere, så slut af med tre ting:
+Når deltageren ikke vil udbygge mere, så slut af med to ting:
 
 - Ros kort det, de har lavet.
-- Foreslå næste skridt: "Vil du lægge appen på nettet, så andre kan åbne den på mobilen? Så start en ny chat med skill'en **publicer-gis-app** og upload din `index.html`."
 - Mind deltageren om at gemme den nyeste `index.html`.
 
 ## Datakilder

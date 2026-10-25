@@ -15,12 +15,16 @@ A GIS professional attending the Session, with no programming experience assumed
 _Avoid_: User, attendee, learner
 
 **Live demo**:
-The part of the Session where the presenter runs the Build skill on stage with an Idea from the audience.
+The part of the Session where the presenter runs the Build skill on stage with an Idea from the audience and then Publishes the App by hand.
 _Avoid_: Hands-on, exercise
 
 **Backup app**:
 An App built and Published before the Session, shown if the Live demo fails: the quietest hotels in Aalborg by road noise.
 _Avoid_: Example app, reference solution
+
+**Participant guide** (_deltagervejledning_):
+The Danish page that Participants are sent to from the Session, explaining how to build and Publish an App at home.
+_Avoid_: Guide, handout, landing page
 
 ### Building an app
 
@@ -30,11 +34,7 @@ _Avoid_: Use case, requirement, case
 
 **Build skill** (`byg-gis-app`):
 The instructions, usable in any AI chat, that interview a Participant about their Idea and build an App from the answers.
-_Avoid_: Prompt, wizard, bot, "the skill" when the Publish skill could be meant
-
-**Publish skill** (`publicer-gis-app`):
-The instructions, usable in any AI chat, that guide a Participant through Publishing an existing App, run separately after the Build skill.
-_Avoid_: Deploy skill, hosting skill
+_Avoid_: Prompt, wizard, bot
 
 **First round** (_førsterunde_):
 The short interview and build that turns an Idea into a first working App, using only Data sources that need no key.
