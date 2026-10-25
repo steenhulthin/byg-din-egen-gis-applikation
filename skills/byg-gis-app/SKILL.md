@@ -23,6 +23,7 @@ Deltageren er GIS-fagperson, men kan ikke programmere. Det er derfor dig, der kl
 3. Skærmkort, Datafordeleren og andre kilder med nøgle (token) må kun bruges i en **udbygningsrunde**.
 4. En datakilde, der ikke er på listen, må kun bruges, når du har tjekket den (se "Andre datakilder").
 5. Appen er altid én `index.html` med CSS og JavaScript indlejret. Den bruger MapLibre GL JS fra et CDN og OpenFreeMap som baggrundskort. Der må ikke være byggeværktøjer, frameworks, ekstra filer eller en server.
+6. **Kopiér grundskabelonen ordret.** Ret kun `TITEL`, `bounds`, `customAttribution` og indholdet af `kort.on('load')`. Tilføj CSS og HTML efter behov, men skriv ikke skabelonens kode om. Biblioteket hedder altid `maplibregl`, aldrig `maplibre`.
 
 ## Førsterunden
 
@@ -141,7 +142,13 @@ kort.on('load', async () => {
 
 ## Efter du har bygget: tjek appen
 
-Hvis du kan køre en browser eller kode, så åbn appen og tjek fire ting:
+Læs altid filen igennem, før du leverer den:
+
+- Søg efter `maplibre.` uden `gl`. Det må ikke findes.
+- Skabelonens kode er uændret, bortset fra det, regel 6 tillader.
+- Hver data-adresse er en, du har tjekket, eller som står på listen.
+
+Hvis du kan køre en browser eller kode, så åbn også appen og tjek fire ting:
 
 - Der er ingen fejl i konsollen.
 - Der bliver tegnet data.
@@ -159,6 +166,9 @@ Giv derefter filen og denne vejledning med dine egne ord:
 Brug også denne vejledning, selvom du selv har tjekket appen. Bed deltageren om at fortælle, om kortet virker.
 
 Får du en fejl tilbage, så forklar kort på dansk, hvad der var galt, og lever en rettet fil.
+
+- Find den linje, fejlen peger på, og ret kun den. Læs fejlteksten bogstaveligt: `maplibre is not defined` betyder en stavefejl i koden, ikke at biblioteket ikke kunne hentes.
+- Byg ikke appen om, og tilføj ikke omveje som ekstra script-indlæsere, andre CDN'er eller proxyer. Skabelonen skal bevares, så næste udbygningsrunde bygger på den samme kode.
 
 ## Udbygningsrunde
 
@@ -218,6 +228,8 @@ Alle kilderne nedenfor kræver ingen nøgle og tillader kald fra browseren. Koor
   - Uden `,CRS:84` til sidst kommer der **0 objekter** tilbage, fordi tjenesten så tolker tallene i sit eget koordinatsystem.
   - Med `,EPSG:4326` skal tallene stå i rækkefølgen bredde, længde. Brug derfor `CRS:84`.
 - `propertyName=` begrænser felterne. Husk så også at tage geometrifeltet med, ellers bliver geometrien `null`.
+- `bbox=` og `cql_filter=` kan ikke bruges sammen. Tjenesten svarer så med en XML-fejl. Skal du både filtrere på et felt og afgrænse til et område, så læg begge dele i `cql_filter` med `BBOX(geometrifelt,VEST,SYD,ØST,NORD,'CRS:84')`. Eksempel med § 3-søer i København:
+  `https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=dai:bes_naturtyper&outputFormat=application/json&srsName=EPSG:4326&propertyName=Natyp_navn,Shape&cql_filter=Natyp_navn='S%C3%B8'%20AND%20BBOX(Shape,12.43,55.61,12.66,55.73,'CRS:84')`
 - `count=` sætter et maksimalt antal objekter.
 - Store polygonlag på landsplan kan være flere MB. Afgræns til området.
 
@@ -352,6 +364,8 @@ Fejler et krav, så sig det på dansk, og foreslå den nærmeste kilde fra liste
 ## Typiske fejl og løsninger
 
 - **Tomt kort men ingen fejl:** bbox mangler `,CRS:84`, eller akserne er byttet om. Det kan også være, at `propertyName` mangler geometrifeltet.
+- **`maplibre is not defined`:** stavefejl. Ret `maplibre.` til `maplibregl.`. Biblioteket er hentet fint.
+- **Fejl om `cdn-cgi/rum` eller `cloudflareinsights`:** de kommer ikke fra appen. Filen er gemt fra en side, der har tilføjet et ekstra `<script>` nederst. Slet den `<script>`-linje. Bed deltageren hente filen med chattens download-knap eller ved at kopiere koden, ikke ved at gemme en forhåndsvisning.
 - **"blocked by CORS policy":** kilden tillader ikke browserkald. Find en anden kilde. Proxy-tjenester må ikke bruges.
 - **Mærkelige tegn i æ/ø/å:** svaret er ISO-8859-1, så brug `TextDecoder('iso-8859-1')`.
 - **Kortet er tomt ved dobbeltklik, men virker andre steder:** ingen kilder på listen kræver en server, så tjek konsollen for den rigtige fejl.
