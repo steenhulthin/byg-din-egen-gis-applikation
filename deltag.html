@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Byg din egen GIS-app derhjemme</title>
+<meta name="description" content="Deltagervejledning fra Kortdage 2026: byg dit eget webkort med en AI-chat, og læg det på nettet med GitHub Pages.">
+<style>
+  :root {
+    --tekst: #1d2433;
+    --svag: #5a6478;
+    --baggrund: #ffffff;
+    --flade: #f2f5f9;
+    --kant: #d6dce5;
+    --accent: #0b6e4f;
+    --accent-tekst: #ffffff;
+    --advarsel: #fff4d6;
+    --advarsel-kant: #e0b84a;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --tekst: #e6e9ef;
+      --svag: #a3acbd;
+      --baggrund: #14181f;
+      --flade: #1e242e;
+      --kant: #343d4b;
+      --accent: #4cc39a;
+      --accent-tekst: #0b1a14;
+      --advarsel: #3a3220;
+      --advarsel-kant: #a8862f;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--baggrund);
+    color: var(--tekst);
+    font: 1.0625rem/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: clamp(1.7rem, 6vw, 2.3rem); line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 1.4rem; line-height: 1.3; margin: 48px 0 12px; padding-top: 16px; border-top: 1px solid var(--kant); }
+  h3 { font-size: 1.1rem; margin: 28px 0 8px; }
+  p, ul, ol { margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  li > ul, li > ol { margin-top: 6px; }
+  a { color: var(--accent); }
+  code {
+    font: 0.92em ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    background: var(--flade);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .indledning { font-size: 1.15rem; color: var(--svag); }
+  nav ol { padding-left: 1.4em; }
+  .knap {
+    display: inline-block;
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-tekst);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .boks {
+    background: var(--flade);
+    border: 1px solid var(--kant);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 0 0 16px;
+  }
+  .boks > :last-child { margin-bottom: 0; }
+  .advarsel { background: var(--advarsel); border-color: var(--advarsel-kant); }
+  .trin > li { margin-bottom: 14px; }
+  .trin > li::marker { font-weight: 700; }
+  dl { margin: 0 0 14px; }
+  dt { font-weight: 700; margin-top: 12px; }
+  dd { margin: 2px 0 0; }
+  footer { margin-top: 48px; color: var(--svag); font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Byg din egen GIS-app derhjemme</h1>
+<p class="indledning">Du så det til Kortdage 2026: en AI-chat gjorde en idé til et kort på nettet på få minutter. Her er alt, hvad du skal bruge for at gøre det selv. Du behøver ikke kunne programmere.</p>
+
+<nav aria-label="Indhold">
+  <ol>
+    <li><a href="#hvad">Det får du</a></li>
+    <li><a href="#hent">Hent filen</a></li>
+    <li><a href="#byg">Byg din app</a></li>
+    <li><a href="#udbyg">Udbyg appen</a></li>
+    <li><a href="#publicer">Læg appen på nettet</a></li>
+    <li><a href="#datakilder">Datakilderne</a></li>
+    <li><a href="#eksempel">Se et eksempel</a></li>
+  </ol>
+</nav>
+
+<h2 id="hvad">Det får du</h2>
+<p>Dit eget webkort på nettet, bygget af en AI-chat ud fra en idé, du selv har. Kortet viser åbne danske data, virker på mobilen og har sin egen adresse, som du kan dele med kolleger.</p>
+<ul>
+  <li>Du bruger den AI-chat, du allerede har, fx ChatGPT, Gemini eller claude.ai.</li>
+  <li>Chatten stiller dig fem korte spørgsmål og bygger så kortet. Til hvert spørgsmål får du et forslag, som du kan sige "ja" til.</li>
+  <li>Kortet er én fil, <code>index.html</code>, som du åbner i din browser.</li>
+  <li>Det hele er gratis. Du skal kun have en gratis GitHub-bruger, når kortet skal på nettet.</li>
+</ul>
+
+<h2 id="hent">Hent filen</h2>
+<p>Filen <code>byg-gis-app</code> indeholder instruktioner til AI-chatten. De fortæller chatten, hvordan den skal interviewe dig og bygge kortet, og hvilke datakilder der virker.</p>
+<p><a class="knap" href="skills/byg-gis-app/SKILL.md" download="byg-gis-app.md">Hent byg-gis-app</a></p>
+<p>Du kan også <a href="skills/byg-gis-app/SKILL.md">åbne filen som tekst</a> og kopiere den hele.</p>
+
+<h2 id="byg">Byg din app</h2>
+<ol class="trin">
+  <li><strong>Åbn en AI-chat</strong>, fx ChatGPT, Gemini eller claude.ai, og start en ny samtale.</li>
+  <li><strong>Giv chatten filen.</strong> Upload <code>byg-gis-app.md</code> med chattens knap til vedhæftning, eller sæt teksten ind direkte. Skriv fx: "Følg vejledningen i filen. Jeg vil gerne bygge et kort."</li>
+  <li><strong>Svar på spørgsmålene</strong> ét ad gangen: din idé, området, datakilderne, hvad der skal ske, når man trykker på kortet, og en titel. Er du i tvivl, så skriv "ja" til chattens forslag.</li>
+  <li><strong>Gem filen som <code>index.html</code></strong>, fx på skrivebordet.
+    <ul>
+      <li>Brug chattens download-knap, hvis der er en.</li>
+      <li>Får du i stedet koden som tekst, så kopier den hele ind i Notesblok (Windows) eller TextEdit (Mac, vælg <em>Format → Lav til ren tekst</em>). Gem den som <code>index.html</code>. I Notesblok skal du vælge <em>Filtype: Alle filer</em>, ellers ender den som <code>index.html.txt</code>.</li>
+    </ul>
+  </li>
+  <li><strong>Åbn appen</strong> ved at dobbeltklikke på <code>index.html</code>. Den åbner i din browser.</li>
+  <li><strong>Er kortet tomt, eller mangler der noget?</strong> Tryk <strong>F12</strong> på tastaturet, og vælg fanen <strong>Konsol</strong> (på engelsk <strong>Console</strong>). Kopier de røde linjer ind i chatten. Chatten retter så fejlen og giver dig en ny fil. Gem den oven i den gamle, og prøv igen.
+    <ul>
+      <li>På Mac i Safari skal du først slå <em>Vis funktioner til webudviklere</em> til under <em>Indstillinger → Avanceret</em>. Det er nemmere at bruge Chrome, Edge eller Firefox.</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="udbyg">Udbyg appen</h2>
+<p>Når kortet virker, spørger chatten: <strong>"Vil du udbygge appen?"</strong> Den foreslår så et par udbygninger, der passer til din idé, fx en ekstra datakilde, en liste over de bedste steder eller farver efter en værdi. Du kan tage så mange runder, du vil. Gem den nyeste <code>index.html</code> hver gang.</p>
+<div class="boks">
+  <p><strong>Klimadatastyrelsens data med en gratis token.</strong> Førsterunden bruger kun datakilder, der ikke kræver login. I en udbygningsrunde kan du også få Skærmkort som baggrundskort og andre data fra Klimadatastyrelsen. Det kræver en gratis token (en slags adgangsnøgle) fra <a href="https://dataforsyningen.dk">Dataforsyningen</a>. Chatten guider dig igennem det.</p>
+</div>
+
+<h2 id="publicer">Læg appen på nettet</h2>
+<p>Du lægger appen på dit eget GitHub Pages-site. Så får den en adresse som <code>https://BRUGERNAVN.github.io/REPONAVN/</code>, som du kan åbne på mobilen og dele. Det er gratis og foregår kun i browseren på github.com.</p>
+<p>GitHub er på engelsk. Knapperne står derfor her med deres engelske navn i fed, og forklaringen er på dansk. GitHub ændrer af og til sin brugerflade, så led efter den nærmeste knap med samme navn, hvis noget ser anderledes ud.</p>
+
+<h3>Før du starter</h3>
+<ul>
+  <li><strong>Appen virker.</strong> Den åbner, når du dobbeltklikker på den, og kortet viser data.</li>
+  <li><strong>Filen hedder præcis <code>index.html</code></strong>, med små bogstaver. Ikke <code>index.html.txt</code>, <code>index (1).html</code> eller <code>Index.html</code>. GitHub Pages viser kun filen automatisk, hvis den hedder sådan.</li>
+</ul>
+<div class="boks advarsel">
+  <p><strong>Bruger appen en token?</strong> Din token bliver synlig for alle, der åbner appen, når den er publiceret. Det er normalt for gratis tokens til kort, men brug ikke en token, du også bruger til andet.</p>
+</div>
+
+<ol class="trin">
+  <li><strong>Opret en GitHub-bruger</strong>, hvis du ikke har en.
+    <ul>
+      <li>Gå til <a href="https://github.com/signup">github.com/signup</a>, og følg vejledningen. GitHub sender en kode på e-mail, som du skal skrive ind. Vælg gratisplanen <strong>Free</strong>, hvis du bliver spurgt.</li>
+      <li>Brugernavnet bliver en del af appens adresse, så vælg et neutralt navn, fx <code>annejensen-gis</code>.</li>
+    </ul>
+  </li>
+  <li><strong>Opret et repository.</strong> Et repository (repo) er en mappe på GitHub, hvor appens fil skal ligge.
+    <ul>
+      <li>Gå til <a href="https://github.com/new">github.com/new</a>, eller tryk på <strong>+</strong> øverst til højre og vælg <strong>New repository</strong>.</li>
+      <li>Skriv et kort navn i <strong>Repository name</strong>, fx <code>stille-hoteller-aalborg</code>. Brug kun små bogstaver, tal og bindestreger. Navnet bliver en del af adressen.</li>
+      <li>Vælg <strong>Public</strong>. GitHub Pages er kun gratis for offentlige repositories.</li>
+      <li>Lad resten stå, og tryk på den grønne knap <strong>Create repository</strong>.</li>
+    </ul>
+  </li>
+  <li><strong>Upload <code>index.html</code>.</strong>
+    <ul>
+      <li>Tryk på <strong>Add file</strong> og vælg <strong>Upload files</strong>. På et helt tomt repository kan du også trykke på linket <strong>uploading an existing file</strong>.</li>
+      <li>Træk <code>index.html</code> ind i feltet, eller tryk <strong>choose your files</strong> og vælg filen. Vent, til filnavnet står under feltet.</li>
+      <li>Tryk på den grønne knap <strong>Commit changes</strong>. Det gemmer filen i dit repository, og du kan nu se <code>index.html</code> i listen over filer.</li>
+    </ul>
+  </li>
+  <li><strong>Slå GitHub Pages til.</strong>
+    <ul>
+      <li>Tryk på <strong>Settings</strong> i menuen øverst i dit repository. På en smal skærm kan den gemme sig under <strong>···</strong>.</li>
+      <li>Tryk på <strong>Pages</strong> i menuen til venstre.</li>
+      <li>Under <strong>Build and deployment</strong> og <strong>Source</strong> vælger du <strong>Deploy from a branch</strong>.</li>
+      <li>Under <strong>Branch</strong> vælger du <strong>main</strong> og mappen <strong>/ (root)</strong>. Tryk så <strong>Save</strong>.</li>
+    </ul>
+  </li>
+  <li><strong>Vent et par minutter, og åbn adressen.</strong>
+    <ul>
+      <li>Genindlæs siden <strong>Settings → Pages</strong>. Når der står <strong>Your site is live at</strong>, kan du trykke på <strong>Visit site</strong>.</li>
+      <li>Adressen er <code>https://BRUGERNAVN.github.io/REPONAVN/</code> med dit eget brugernavn og navnet på dit repository.</li>
+      <li>Åbn den også på mobilen. Du kan fx sende linket til dig selv.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Hvis det ikke virker</h3>
+<dl>
+  <dt>Siden viser "404"</dt>
+  <dd>Det betyder oftest en af tre ting:
+    <ul>
+      <li>GitHub er ikke færdig endnu. Vent et par minutter mere, og genindlæs. Under fanen <strong>Actions</strong> viser en grøn prik, at siden er klar.</li>
+      <li>Filen hedder ikke præcis <code>index.html</code>. Upload den igen med det rigtige navn.</li>
+      <li>Dit repository er privat. Gør det offentligt under <strong>Settings</strong>, nederst på siden under <strong>Change visibility</strong>.</li>
+    </ul>
+  </dd>
+  <dt>Kortet virker på din computer, men ikke på nettet</dt>
+  <dd>Åbn adressen, tryk <strong>F12</strong>, vælg fanen <strong>Konsol</strong>, og kopier de røde linjer ind i chatten, som da du byggede appen.</dd>
+</dl>
+
+<h3>Opdater appen senere</h3>
+<p>Har du udbygget appen, så læg den nye version på samme måde:</p>
+<ol>
+  <li>Åbn dit repository på github.com.</li>
+  <li>Tryk <strong>Add file → Upload files</strong>, og træk den nye <code>index.html</code> ind. Den erstatter den gamle.</li>
+  <li>Tryk <strong>Commit changes</strong>, og vent et par minutter.</li>
+  <li>Genindlæs appen. Ser den stadig gammel ud, så tryk <strong>Ctrl+F5</strong>, eller <strong>Cmd+Shift+R</strong> på Mac.</li>
+</ol>
+<p>Husk, at alt i et offentligt repository kan ses af alle.</p>
+
+<h2 id="datakilder">Datakilderne</h2>
+<p>Chatten kender disse åbne datakilder. De virker alle uden login. Kender du en anden kilde, kan du bede chatten om at tjekke, om den kan bruges.</p>
+<dl>
+  <dt>OpenFreeMap</dt>
+  <dd>Baggrundskortet, baseret på OpenStreetMap.</dd>
+  <dt>Danmarks Miljøportal</dt>
+  <dd>Natur og beskyttede områder: fredninger, § 3-natur, habitat- og fuglebeskyttelsesområder, bygge- og beskyttelseslinjer, råstofområder.</dd>
+  <dt>MiljøGIS (Miljøministeriet)</dt>
+  <dd>Natura 2000, vandområdeplaner og klima.</dd>
+  <dt>Støjkortlægning af vejstøj</dt>
+  <dd>Modelleret vejstøj om natten og over døgnet. Kun København, Odense, Aarhus og Aalborg.</dd>
+  <dt>DMI</dt>
+  <dd>Vejr, klima, hav og lyn, fx seneste temperatur på alle stationer.</dd>
+  <dt>Danmarks Statistik</dt>
+  <dd>Tal pr. kommune, fx befolkning, vist som farver på kommunerne.</dd>
+  <dt>Kommunegrænser</dt>
+  <dd>Alle 99 kommuner, til at zoome til en kommune eller farve kommunerne efter et tal.</dd>
+  <dt>Vejdirektoratet</dt>
+  <dd>Trafiktællinger: årsdøgntrafik, hastigheder og andel lastbiler.</dd>
+  <dt>Københavns Kommune</dt>
+  <dd>Omkring 480 lag, fx legepladser, træer, parker, cykelstier og skybrudsprojekter. Kun København.</dd>
+  <dt>OpenStreetMap (Overpass)</dt>
+  <dd>Alt, hvad der er kortlagt i OpenStreetMap, fx hoteller, skoler eller ladestandere i en kommune.</dd>
+</dl>
+<p>Kræver gratis token, kun i en udbygningsrunde: Skærmkort og andre data fra Klimadatastyrelsen.</p>
+
+<h2 id="eksempel">Se et eksempel</h2>
+<p>Sådan kan en færdig app se ud: de mest stille hoteller i Aalborg, målt på modelleret vejstøj om natten. Den er bygget med <code>byg-gis-app</code> og lagt på nettet på samme måde, som du har læst her.</p>
+<p><a class="knap" href="backup/">Åbn eksemplet</a></p>
+
+<footer>
+  <p>Byg din egen GIS-applikation, Kortdage 2026, Aalborg. Steen Hulthin Rasmussen, Brainworld.</p>
+</footer>
+
+</main>
+</body>
+</html>
