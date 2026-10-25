@@ -1,0 +1,75 @@
+name: Check data sources
+
+# Makes one real request to every external Data source on the curated list and
+# opens (or comments on) a needs-triage issue if any of them is broken.
+on:
+  schedule:
+    # Times are UTC. GitHub may start scheduled runs some minutes late.
+    - cron: "0 6 1 * *" # 06:00 on the 1st of every month
+    # Cron has no year field, so this also fires in later Novembers: remove it after Kortdage 2026.
+    - cron: "0 6 18-20 11 *" # Daily on 18-20 November (Kortdage 2026)
+  workflow_dispatch:
+    inputs:
+      extra_url:
+        description: "Extra URL to check as a GeoJSON source, e.g. a deliberately broken one to test the issue reporting"
+        required: false
+        default: ""
+
+defaults:
+  run:
+    # Unlike the implicit default, an explicit bash shell runs with pipefail,
+    # so the check step fails when the script does, not when tee does.
+    shell: bash
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add extra URL to the sources list
+        if: inputs.extra_url != ''
+        env:
+          EXTRA_URL: ${{ inputs.extra_url }}
+        run: printf 'Extra URL from manual run\tgeojson\t%s\n' "$EXTRA_URL" >> scripts/data-sources.tsv
+
+      - name: Check data sources
+        id: check
+        run: scripts/check-data-sources.sh | tee "$RUNNER_TEMP/result.txt"
+
+      - name: Report broken sources
+        if: failure() && steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: Data source check failed
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "The data source check found broken sources on $(date -u +%Y-%m-%d)."
+            echo
+            echo "Broken sources:"
+            echo
+            awk '/^FAIL/ { sub(/^FAIL +/, ""); i = match($0, /  +/)
+              print "- " substr($0, 1, i - 1) ": " substr($0, i + RLENGTH); n++ }
+              END { if (!n) print "- (no FAIL lines; the check itself failed)" }' "$RUNNER_TEMP/result.txt"
+            echo
+            echo "Full result:"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/result.txt"
+            echo '```'
+            echo
+            echo "Run: $RUN_URL"
+          } > "$RUNNER_TEMP/report.md"
+
+          existing="$(gh issue list --state open --label needs-triage --search "in:title \"$TITLE\"" \
+            --json number,title --jq "map(select(.title == \"$TITLE\")) | .[0].number // empty")"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$RUNNER_TEMP/report.md"
+          else
+            gh issue create --title "$TITLE" --label needs-triage --body-file "$RUNNER_TEMP/report.md"
+          fi

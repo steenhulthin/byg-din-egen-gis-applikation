@@ -1,0 +1,19 @@
+# External Data sources checked by check-data-sources.sh.
+# Keep in sync with "Datakilder" in skills/byg-gis-app/SKILL.md. This repo's own
+# Pages content (data/kommuneinddeling.geojson) is not checked.
+#
+# NAME<tab>KIND<tab>URL[<tab>POST_BODY]
+# KIND is geojson, json, style (MapLibre style) or tile (TileJSON; tile 0/0/0 is fetched too).
+OpenFreeMap style positron	style	https://tiles.openfreemap.org/styles/positron
+OpenFreeMap style liberty	style	https://tiles.openfreemap.org/styles/liberty
+OpenFreeMap style bright	style	https://tiles.openfreemap.org/styles/bright
+OpenFreeMap tiles	tile	https://tiles.openfreemap.org/planet
+Danmarks Miljøportal WFS	geojson	https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=dai:fredede_omr&outputFormat=application/json&srsName=EPSG:4326&bbox=9.7,56.9,10.2,57.2,CRS:84&count=1
+MiljøGIS Natura 2000 WFS	geojson	https://wfs2-miljoegis.mim.dk/natur/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=natur:natura_2000_omraader&outputFormat=application/json&srsName=EPSG:4326&bbox=9.7,56.9,10.2,57.2,CRS:84&count=1
+MiljøGIS road noise WFS	geojson	https://wfs2-miljoegis.mim.dk/stoej/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=stoej:b4_dk_aggroad_lnight&outputFormat=application/json&propertyName=db_low&cql_filter=DWITHIN(wkb_geometry,SRID=4326;POINT(9.92%2057.05),500,meters)&count=1
+DMI Open Data observations	geojson	https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?parameterId=temp_dry&period=latest-hour&bbox=7.8,54.5,15.3,57.8&limit=1
+DMI Open Data stations	geojson	https://opendataapi.dmi.dk/v2/metObs/collections/station/items?limit=1
+Danmarks Statistik Statbank	json	https://api.statbank.dk/v1/tableinfo/FOLK1A?lang=da&format=JSON
+Vejdirektoratet traffic counts WFS	geojson	https://vmgeoserver.vd.dk/geosmastra/opendata/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=opendata:OPEN_DATA_NOEGLETAL_VIEW&outputFormat=application/json&srsName=EPSG:4326&count=1
+Københavns Kommune WFS	geojson	https://wfs-kbhkort.kk.dk/k101/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=k101:legeplads&outputFormat=application/json&srsName=EPSG:4326&count=1
+Overpass API	json	https://overpass-api.de/api/interpreter	data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bnode%2857.04%2C9.91%2C57.06%2C9.93%29%5B%22tourism%22%3D%22hotel%22%5D%3Bout%201%3B
