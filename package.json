@@ -1,0 +1,12 @@
+{
+  "name": "byg-din-egen-gis-applikation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "checkpoint-a": "node tests/checkpoint-a/run.mjs",
+    "test": "node --test tests/checkpoint-a/*.test.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

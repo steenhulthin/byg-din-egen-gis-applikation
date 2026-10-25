@@ -55,3 +55,9 @@ _Avoid_: Dataset, layer, API
 **Publish**:
 Putting an App online on the Participant's own GitHub Pages site.
 _Avoid_: Deploy, host, go live
+
+### Checking
+
+**Checkpoint A**:
+The automated check of one App file in a headless browser at desktop and phone sizes, from the outside only. Run against the Backup app in CI and against Apps saved from skill runs.
+_Avoid_: E2E test, smoke test

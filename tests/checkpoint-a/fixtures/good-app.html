@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kommuner i Nordjylland</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+  #kort { position: fixed; inset: 0; height: 100dvh; }
+  #titel { position: fixed; top: 0; left: 0; right: 0; z-index: 2; margin: 0; padding: 8px 12px;
+           font-size: 1.1rem; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #besked { position: fixed; top: 48px; left: 12px; right: 12px; z-index: 2; display: none;
+            padding: 8px 12px; background: #fff3cd; border-radius: 6px; }
+  .maplibregl-popup-content { max-width: min(300px, 85vw); max-height: 50dvh; overflow: auto; }
+</style>
+</head>
+<body>
+<h1 id="titel">Kommuner i Nordjylland</h1>
+<div id="besked" role="status"></div>
+<div id="kort"></div>
+<script>
+const kort = new maplibregl.Map({
+  container: 'kort',
+  style: 'https://tiles.openfreemap.org/styles/positron',
+  bounds: [[9.6, 56.8], [10.4, 57.3]],
+  attributionControl: false
+});
+kort.addControl(new maplibregl.AttributionControl({
+  compact: false,
+  customAttribution: ['Indeholder data fra Klimadatastyrelsen, DAGI, 25. oktober 2026']
+}));
+kort.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+function visBesked(tekst) {
+  const el = document.getElementById('besked');
+  el.textContent = tekst;
+  el.style.display = 'block';
+}
+
+async function hentData(navn, url, læs = svar => svar.json(), valg) {
+  try {
+    const svar = await fetch(url, valg);
+    if (!svar.ok) throw new Error(navn + ' svarede ' + svar.status);
+    return await læs(svar);
+  } catch (fejl) {
+    console.error(fejl);
+    visBesked('Kunne ikke hente data fra ' + navn + '. Prøv at genindlæse siden.');
+    return null;
+  }
+}
+
+kort.on('load', async () => {
+  const kommuner = await hentData('Kommunegrænser',
+    'https://steenhulthin.github.io/byg-din-egen-gis-applikation/data/kommuneinddeling.geojson');
+  if (!kommuner) return;
+  kort.addSource('kommuner', { type: 'geojson', data: kommuner });
+  kort.addLayer({ id: 'kommuner', type: 'fill', source: 'kommuner',
+    paint: { 'fill-color': '#2a7f62', 'fill-opacity': 0.3, 'fill-outline-color': '#1b4f3d' } });
+  kort.on('click', 'kommuner', e => {
+    new maplibregl.Popup().setLngLat(e.lngLat)
+      .setHTML('<strong></strong>').addTo(kort)
+      .getElement().querySelector('strong').textContent = e.features[0].properties.navn;
+  });
+});
+</script>
+</body>
+</html>

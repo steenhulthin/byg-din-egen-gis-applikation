@@ -1,0 +1,42 @@
+name: Checkpoint A
+
+# Opens the Backup app in a headless browser at desktop and phone sizes and checks
+# it from the outside. Also tests Checkpoint A itself against its fixture Apps.
+on:
+  push:
+    branches: [trunk]
+  pull_request:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  checkpoint-a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Test Checkpoint A against its fixture Apps
+        run: npm test
+
+      - name: Run Checkpoint A against the Backup app
+        run: |
+          if [ -f backup/index.html ]; then
+            npm run checkpoint-a -- backup/index.html
+          else
+            echo "::notice::backup/index.html does not exist yet, so the Backup app was not checked."
+          fi
