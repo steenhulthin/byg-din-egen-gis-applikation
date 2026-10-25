@@ -36,7 +36,7 @@ _Avoid_: Prompt, wizard, bot, "the skill" when the Publish skill could be meant
 The instructions, usable in any AI chat, that guide a Participant through Publishing an existing App, run separately after the Build skill.
 _Avoid_: Deploy skill, hosting skill
 
-**First round**:
+**First round** (_førsterunde_):
 The short interview and build that turns an Idea into a first working App, using only Data sources that need no key.
 _Avoid_: Quick mode, basic mode
 
