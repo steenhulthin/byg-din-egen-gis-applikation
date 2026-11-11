@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beskyttede søer og fugleområder i København</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+  #kort { position: fixed; inset: 0; height: 100dvh; }
+  #titel { position: fixed; top: 0; left: 0; right: 0; z-index: 2; margin: 0; padding: 8px 12px;
+           font-size: 1.1rem; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #besked { position: fixed; top: 48px; left: 12px; right: 12px; z-index: 2; display: none;
+            padding: 8px 12px; background: #fff3cd; border-radius: 6px; }
+  #forklaring { position: fixed; bottom: 12px; left: 12px; z-index: 2; background: rgba(255,255,255,.9);
+                border-radius: 6px; padding: 8px 12px; font-size: .9rem; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #forklaring .gron { display: inline-block; width: 12px; height: 12px; background: #2e7d32; opacity: .4; border: 1px solid #2e7d32; vertical-align: middle; }
+  #forklaring .bla { display: inline-block; width: 12px; height: 12px; background: #1976d2; opacity: .7; border: 1px solid #1976d2; vertical-align: middle; }
+  .maplibregl-popup-content { max-width: min(300px, 85vw); max-height: 50dvh; overflow: auto; }
+</style>
+</head>
+<body>
+<h1 id="titel">Beskyttede søer og fugleområder i København</h1>
+<div id="besked" role="status"></div>
+<div id="forklaring">
+  <span class="gron"></span> Fuglebeskyttelsesområde<br>
+  <span class="bla"></span> § 3-beskyttet sø
+</div>
+<div id="kort"></div>
+<script>
+function visBesked(tekst) {
+  const el = document.getElementById('besked');
+  el.textContent = tekst;
+  el.style.display = 'block';
+}
+
+// Hent kortbiblioteket fra flere adresser, hvis den første fejler
+function laesScript(url) {
+  return new Promise((udfoer, fejl) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = udfoer;
+    s.onerror = () => fejl(new Error('Kunne ikke hente ' + url));
+    document.head.appendChild(s);
+  });
+}
+
+async function start() {
+  const kilder = [
+    'https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js',
+    'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js'
+  ];
+  for (const url of kilder) {
+    try { await laesScript(url); break; } catch (e) { console.error(e); }
+  }
+  if (typeof maplibregl === 'undefined') {
+    visBesked('Kortbiblioteket kunne ikke hentes. Tjek din internetforbindelse, og slå eventuel reklame-blokering fra for denne side. Prøv derefter at genindlæse.');
+    return;
+  }
+
+  const kort = new maplibregl.Map({
+    container: 'kort',
+    style: 'https://tiles.openfreemap.org/styles/positron',
+    bounds: [[12.43, 55.61], [12.66, 55.73]],
+    attributionControl: false
+  });
+  kort.addControl(new maplibregl.AttributionControl({
+    compact: false,
+    customAttribution: ['Danmarks Miljøportal']
+  }));
+  kort.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+  async function hentData(navn, url) {
+    try {
+      const svar = await fetch(url);
+      if (!svar.ok) throw new Error(navn + ' svarede ' + svar.status);
+      return await svar.json();
+    } catch (fejl) {
+      console.error(fejl);
+      visBesked('Kunne ikke hente data fra ' + navn + '. Prøv at genindlæse siden.');
+      return null;
+    }
+  }
+
+  kort.on('load', async () => {
+    // Fuglebeskyttelsesområder i København
+    const fugle = await hentData('Danmarks Miljøportal',
+      'https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=dai:fugle_bes_omr&outputFormat=application/json&srsName=EPSG:4326&propertyName=Objektnavn,Site_nr,Shape&bbox=12.43,55.61,12.66,55.73,CRS:84');
+
+    // § 3-beskyttede søer i København
+    const soe = await hentData('Danmarks Miljøportal',
+      "https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=dai:bes_naturtyper&outputFormat=application/json&srsName=EPSG:4326&propertyName=Natyp_navn,Shape&cql_filter=Natyp_navn='S%C3%B8'%20AND%20BBOX(Shape,12.43,55.61,12.66,55.73,'EPSG:4326')");
+
+    if (fugle && fugle.features) {
+      kort.addSource('fugle', { type: 'geojson', data: fugle });
+      kort.addLayer({
+        id: 'fugle-flade',
+        type: 'fill',
+        source: 'fugle',
+        paint: { 'fill-color': '#2e7d32', 'fill-opacity': 0.4 }
+      });
+      kort.addLayer({
+        id: 'fugle-kant',
+        type: 'line',
+        source: 'fugle',
+        paint: { 'line-color': '#2e7d32', 'line-width': 2 }
+      });
+    }
+
+    if (soe && soe.features) {
+      kort.addSource('soer', { type: 'geojson', data: soe });
+      kort.addLayer({
+        id: 'soer-flade',
+        type: 'fill',
+        source: 'soer',
+        paint: { 'fill-color': '#1976d2', 'fill-opacity': 0.7 }
+      });
+      kort.addLayer({
+        id: 'soer-kant',
+        type: 'line',
+        source: 'soer',
+        paint: { 'line-color': '#1976d2', 'line-width': 1 }
+      });
+    }
+
+    // Popups ved tryk
+    function lavPopup(lagId, lavTekst) {
+      kort.on('click', lagId, (e) => {
+        const p = e.features[0].properties;
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(lavTekst(p))
+          .addTo(kort);
+      });
+    }
+
+    lavPopup('fugle-flade', p =>
+      '<b>' + (p.Objektnavn || 'Fuglebeskyttelsesområde') + '</b><br>Fuglebeskyttelsesområde nr. ' + (p.Site_nr || 'ukendt') +
+      '<br><small>Beskyttet efter fuglebeskyttelsesdirektivet.</small>');
+
+    lavPopup('soer-flade', p =>
+      '<b>§ 3-beskyttet sø</b><br>' + (p.Natyp_navn || 'Sø') +
+      '<br><small>Beskyttet efter naturbeskyttelseslovens § 3.</small>');
+  });
+}
+
+start();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" nonce="ucnwRBk2virzcaum0z/rbg==" data-cf-beacon='{"version":"2024.11.0","token":"36b4216ae2dc4d5488c249161e71fe1e","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
