@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beskyttet natur i Aalborg</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+  #kort { position: fixed; inset: 0; height: 100dvh; }
+  #titel { position: fixed; top: 0; left: 0; right: 0; z-index: 2; margin: 0; padding: 8px 12px;
+           font-size: 1.1rem; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #besked { position: fixed; top: 48px; left: 12px; right: 12px; z-index: 2; display: none;
+            padding: 8px 12px; background: #fff3cd; border-radius: 6px; }
+  .maplibregl-popup-content { max-width: min(300px, 85vw); max-height: 50dvh; overflow: auto; }
+  #signatur { position: fixed; left: 12px; bottom: 40px; z-index: 2; padding: 8px 10px; font-size: .9rem;
+              background: rgba(255,255,255,.92); border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,.2); }
+  #signatur span { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<h1 id="titel">Beskyttet natur i Aalborg</h1>
+<div id="besked" role="status"></div>
+<div id="kort"></div>
+<div id="signatur">
+  <div><span style="background:#2e7d32"></span>Natura 2000</div>
+  <div><span style="background:#8e24aa"></span>Fredning</div>
+</div>
+<script>
+const kort = new maplibregl.Map({
+  container: 'kort',
+  style: 'https://tiles.openfreemap.org/styles/positron',
+  bounds: [[9.39, 56.81], [10.39, 57.23]], // erstat med områdets [[vest, syd], [øst, nord]]
+  attributionControl: false
+});
+kort.addControl(new maplibregl.AttributionControl({
+  compact: false, // kreditering skal altid være synlig
+  customAttribution: ['Miljøministeriet, MiljøGIS', 'Danmarks Miljøportal', 'Indeholder data fra Klimadatastyrelsen, DAGI, 25. oktober 2026']
+}));
+kort.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+function visBesked(tekst) {
+  const el = document.getElementById('besked');
+  el.textContent = tekst;
+  el.style.display = 'block';
+}
+
+// Kildernes navne til fejlbeskeder
+const kildenavne = {};
+function tilføjKilde(id, navn, kilde) {
+  kildenavne[id] = navn;
+  kort.addSource(id, kilde);
+}
+
+kort.on('error', hændelse => {
+  console.error(hændelse.error);
+  const navn = kildenavne[hændelse.sourceId];
+  visBesked(navn ? 'Kunne ikke hente data fra ' + navn + '. Prøv at genindlæse siden.'
+                 : 'Der skete en fejl på kortet. Prøv at genindlæse siden.');
+});
+
+kort.on('load', () => {
+  const område = '9.39,56.81,10.39,57.23,CRS:84';
+
+  tilføjKilde('natura2000', 'MiljøGIS', {
+    type: 'geojson',
+    data: 'https://wfs2-miljoegis.mim.dk/natur/ows?service=WFS&version=2.0.0&request=GetFeature' +
+      '&typeNames=natur:natura_2000_omraader&outputFormat=application/json&srsName=EPSG:4326&bbox=' + område
+  });
+  tilføjKilde('fredninger', 'Danmarks Miljøportal', {
+    type: 'geojson',
+    data: 'https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature' +
+      '&typeNames=dai:fredede_omr&outputFormat=application/json&srsName=EPSG:4326&bbox=' + område
+  });
+  tilføjKilde('kommuner', 'Kommunegrænser', {
+    type: 'geojson',
+    data: 'https://steenhulthin.github.io/byg-din-egen-gis-applikation/data/kommuneinddeling.geojson'
+  });
+
+  kort.addLayer({ id: 'natura2000-flade', type: 'fill', source: 'natura2000',
+    paint: { 'fill-color': '#2e7d32', 'fill-opacity': 0.3 } });
+  kort.addLayer({ id: 'natura2000-kant', type: 'line', source: 'natura2000',
+    paint: { 'line-color': '#2e7d32', 'line-width': 1.5 } });
+  kort.addLayer({ id: 'fredninger-flade', type: 'fill', source: 'fredninger',
+    paint: { 'fill-color': '#8e24aa', 'fill-opacity': 0.45 } });
+  kort.addLayer({ id: 'kommunegrænse', type: 'line', source: 'kommuner',
+    filter: ['==', ['get', 'navn'], 'Aalborg'],
+    paint: { 'line-color': '#333', 'line-width': 2, 'line-dasharray': [3, 2] } });
+
+  function visPopup(lngLat, html) {
+    new maplibregl.Popup().setLngLat(lngLat).setHTML(html).addTo(kort);
+  }
+  function tekst(værdi) {
+    return String(værdi ?? '').replace(/[&<>"]/g, tegn => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[tegn]);
+  }
+
+  // Fredninger ligger øverst, så de vinder, når de overlapper Natura 2000
+  kort.on('click', (e) => {
+    const [objekt] = kort.queryRenderedFeatures(e.point, { layers: ['fredninger-flade', 'natura2000-flade'] });
+    if (!objekt) return;
+    const p = objekt.properties;
+    if (objekt.layer.id === 'fredninger-flade') {
+      const link = p.Link ? '<br><a href="' + tekst(p.Link) + '" target="_blank" rel="noopener">Se fredningen (PDF)</a>' : '';
+      visPopup(e.lngLat, '<strong>' + tekst(p.Fred_navn || 'Fredning uden navn') + '</strong><br>Fredet område' + link);
+    } else {
+      visPopup(e.lngLat, '<strong>' + tekst(p.n2000_navn) + '</strong><br>Natura 2000-område nr. ' + tekst(p.n2000_nr));
+    }
+  });
+  for (const lag of ['fredninger-flade', 'natura2000-flade']) {
+    kort.on('mouseenter', lag, () => { kort.getCanvas().style.cursor = 'pointer'; });
+    kort.on('mouseleave', lag, () => { kort.getCanvas().style.cursor = ''; });
+  }
+});
+</script>
+</body>
+</html>
