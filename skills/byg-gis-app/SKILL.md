@@ -248,19 +248,27 @@ Alle kilderne nedenfor kræver ingen nøgle, tillader kald fra browseren og kan 
   `https://arealeditering-dist-geo.miljoeportal.dk/geoserver/ows?service=WMS&version=1.1.1&request=GetMap&layers=dai:bes_naturtyper&styles=&srs=EPSG:3857&bbox={bbox-epsg-3857}&width=256&height=256&format=image/png&transparent=true`
 - Kredit: "Danmarks Miljøportal".
 
-### MiljøGIS (Miljøministeriet: Natura 2000)
-- Adresse: `https://wfs2-miljoegis.mim.dk/natur/ows`
-- Lag: `natur:natura_2000_omraader`, med felterne `n2000_navn`, `n2000_nr` og geometrifeltet `wkb_geometry`.
+### MiljøGIS (Miljøministeriet: natur, vand og klima)
+- Adresse: `https://wfs2-miljoegis.mim.dk/{tema}/ows`. Temaet er den første del af lagnavnet, fx `natur` i `natur:natura_2000_omraader`.
+- Udvalgte lag:
+  - `natur:natura_2000_omraader`: Natura 2000-områder, med `n2000_navn` og `n2000_nr`.
+  - `vp3_2endelig2025:vp3_2e2025_vandloeb_samlet`: vandløb fra vandområdeplanerne, med `ov_navn`, økologisk tilstand `til_oko_sm`, målet `mal_oko_sm` og `link`.
+  - `vp3_2endelig2025:vp3_2e2025_soe_samlet`: søer med de samme felter.
+  - `vp3_2endelig2025:vp3_2e2025_badevand`: badevandsstationer (punkter), med navnet `nametext`.
+  - `klima:kystbeskyttelse`: kystbeskyttelse som linjer, med typen i `type`, fx "Høfder".
+- Geometrifeltet hedder `wkb_geometry`.
 - Eksempel med Natura 2000 omkring Aalborg: `https://wfs2-miljoegis.mim.dk/natur/ows?service=WFS&version=2.0.0&request=GetFeature&typeNames=natur:natura_2000_omraader&outputFormat=application/json&srsName=EPSG:4326&bbox=9.7,56.9,10.2,57.2,CRS:84`
 - Kredit: "Miljøministeriet, MiljøGIS".
 
-### DMI Open Data (vejr, hav og lyn)
+### DMI Open Data (vejr, hav og lyn, nu og tidligere)
 - Adresse: `https://opendataapi.dmi.dk/v2/...`. Den kræver ingen nøgle og svarer med GeoJSON, så adressen bruges direkte som `data`.
 - Samlinger:
   - Seneste temperatur på alle danske stationer: `https://opendataapi.dmi.dk/v2/metObs/collections/observation/items?parameterId=temp_dry&period=latest-hour&bbox=7.8,54.5,15.3,57.8&limit=1000`
   - Havobservationer: `.../oceanObs/collections/observation/items`
   - Lyn: `.../lightningdata/collections/observation/items`
 - Parametre: `parameterId`, `period` (`latest`, `latest-hour`, `latest-day`), `bbox` (lon/lat), `limit` (højst 300000).
+- Tidligere målinger: brug `datetime=` i stedet for `period`, fx `datetime=2026-07-01T12:00:00Z` for ét tidspunkt eller `datetime=2026-07-01T00:00:00Z/2026-07-02T00:00:00Z` for et døgn.
+- Tag altid `bbox=7.8,54.5,15.3,57.8` med. Uden den kommer Grønlands og Færøernes stationer også med.
 - Værdien står i feltet `value`. Observationer har ikke stationsnavne, så vis `stationId` og tidspunktet `observed`.
 - Kredit: "Data fra DMI".
 
