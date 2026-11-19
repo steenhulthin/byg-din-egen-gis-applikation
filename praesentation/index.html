@@ -200,16 +200,16 @@
       <li><span class="knap">github.com/new</span>: giv dit repository et navn, og vælg <span class="knap">Public</span></li>
       <li><span class="knap">Add file → Upload files</span>: træk <code>index.html</code> ind, og tryk <span class="knap">Commit changes</span></li>
       <li><span class="knap">Settings → Pages</span>: vælg <span class="knap">Deploy from a branch</span>, <span class="knap">main</span> og <span class="knap">/ (root)</span>, og tryk <span class="knap">Save</span></li>
-      <li>Vent et par minutter: <code>brugernavn.github.io/repo</code></li>
+      <li>Vent et par minutter: <code>steenhulthin.github.io/kortdage2026-demo</code></li>
     </ol>
   </div>
   <div>
-    <figure class="qr" id="demo-qr" data-qr="https://steenhulthin.github.io/byg-din-egen-gis-applikation/backup/">
-      <figcaption>Backup-appen: de mest stille hoteller i Aalborg</figcaption>
+    <figure class="qr" id="demo-qr" data-qr="https://steenhulthin.github.io/kortdage2026-demo/">
+      <figcaption>steenhulthin.github.io/kortdage2026-demo</figcaption>
     </figure>
     <form class="demo-adresse" id="demo-form">
       <label for="demo-felt">Demo-appens adresse</label><br>
-      <input id="demo-felt" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Tom: Backup-appen">
+      <input id="demo-felt" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Tom: demo-appen">
     </form>
   </div>
 </section>
@@ -2555,17 +2555,17 @@ function tegnQr(figur, adresse) {
 
 for (const figur of document.querySelectorAll('[data-qr]')) tegnQr(figur, figur.dataset.qr);
 
-// På scenen skriver oplægsholderen demo-appens adresse. Et tomt felt giver Backup-appen.
+// Feltet kan sætte en anden adresse, fx Backup-appens, hvis Live demo fejler. Et tomt felt giver demo-appen.
 const demoFigur = document.getElementById('demo-qr');
 const demoTekst = demoFigur.querySelector('figcaption');
 const demoFelt = document.getElementById('demo-felt');
-const backupAdresse = demoFigur.dataset.qr;
-const backupTekst = demoTekst.textContent;
+const standardAdresse = demoFigur.dataset.qr;
+const standardTekst = demoTekst.textContent;
 
 function visDemoApp(adresse) {
   const uden = adresse.trim().replace(/^https?:\/\//i, '');
-  tegnQr(demoFigur, uden ? `https://${uden}` : backupAdresse);
-  demoTekst.textContent = uden || backupTekst;
+  tegnQr(demoFigur, uden ? `https://${uden}` : standardAdresse);
+  demoTekst.textContent = uden || standardTekst;
 }
 
 document.getElementById('demo-form').addEventListener('submit', (event) => {
