@@ -1,10 +1,10 @@
-// Tests the Session slides (index.html) from the outside in headless Chromium.
+// Tests the Session slides (praesentation/index.html) from the outside in headless Chromium.
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 import jsQR from 'jsqr';
 
-const slidesUrl = new URL('../../index.html', import.meta.url).href;
+const slidesUrl = new URL('../../praesentation/index.html', import.meta.url).href;
 const PAGES = 'https://steenhulthin.github.io/byg-din-egen-gis-applikation/';
 
 let browser;

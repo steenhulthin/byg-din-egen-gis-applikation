@@ -1,4 +1,4 @@
-// Render the session slides (index.html) to a PDF, one slide per landscape A4 page.
+// Render the session slides (praesentation/index.html) to a PDF, one slide per landscape A4 page.
 // Usage: node scripts/slides-til-pdf.mjs [output.pdf]
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,7 @@ const output = process.argv[2] ?? join(root, 'slides.pdf');
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-await page.goto('file://' + join(root, 'index.html'));
+await page.goto('file://' + join(root, 'praesentation', 'index.html'));
 await page.waitForLoadState('load');
 
 // Wait for the inlined QR generator to draw the codes.

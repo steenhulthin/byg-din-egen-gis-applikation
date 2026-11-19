@@ -26,6 +26,10 @@ _Avoid_: Example app, reference solution
 The Danish page that Participants are sent to from the Session, explaining how to build and Publish an App at home.
 _Avoid_: Guide, handout, landing page
 
+**Front page** (_forside_):
+The root page of the GitHub Pages site: a link to the Session slides and the five workflow steps (Idea → Build skill → App → Publish → link) in short form, linking on to the Participant guide.
+_Avoid_: Landing page, home page
+
 ### Building an app
 
 **Idea** (_problemstilling_):
