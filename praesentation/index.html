@@ -99,7 +99,7 @@
   .flow strong { display: block; font-size: 1.1em; margin-bottom: 0.3em; }
   .flow strong code { font-size: 0.85em; white-space: nowrap; }
   .flow span { display: block; color: var(--svag); font-size: 0.75em; }
-  .flow .vigtig { border-color: var(--accent); }
+  .flow + .note { margin-top: 1.2em; }
 
   /* Slide 3 */
   .kilder {
@@ -149,11 +149,12 @@
   <h2>Sådan virker det</h2>
   <ol class="flow">
     <li><strong>Idé</strong><span>Det, kortet skal hjælpe dig med</span></li>
-    <li class="vigtig"><strong><code>byg-gis-app</code></strong><span>Instruktioner til en AI-chat: fem spørgsmål, så bygger den</span></li>
+    <li><strong>Skill</strong><span><code>byg-gis-app</code> i en AI-chat: fem spørgsmål, så bygger den</span></li>
     <li><strong>App</strong><span>Ét webkort i én fil: <code>index.html</code></span></li>
     <li><strong>Publicér</strong><span>I hånden på github.com, kun i browseren</span></li>
     <li><strong>Link</strong><span>Din egen adresse, som du kan dele</span></li>
   </ol>
+  <p class="note">En skill er en tekstfil med instruktioner, som du sætter ind i en AI-chat, fx ChatGPT, Gemini eller claude.ai. Den fortæller chatten, hvad den skal spørge dig om, hvordan kortet skal bygges, og hvilke datakilder der virker.</p>
 </section>
 
 <section class="slide" aria-label="Slide 3">
