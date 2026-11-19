@@ -53,7 +53,7 @@ The static web map a Participant ends up with, built from their Idea and one or 
 _Avoid_: GIS application (outside the title), website, solution
 
 **Data source** (_datakilde_):
-An open geodata service that an App shows or queries, either from the curated list or verified to work before use.
+An open geodata service whose URL an App hands directly to the map, either from the curated list or verified to work before use.
 _Avoid_: Dataset, layer, API
 
 **Publish**:

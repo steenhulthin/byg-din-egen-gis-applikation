@@ -78,4 +78,4 @@ Tick each one in QGIS. Any claim that is wrong is a bug in the skill, whatever t
 
 ## Shortlist
 
-To be decided from the scores and checklist. Draft for `/grill-with-docs`: keep Kommunegrænser, Danmarks Miljøportal, DMI and Danmarks Statistik; decide on Natura 2000 (merge into Miljøportal), Vejdirektoratet and road noise; move Københavns Kommune and Overpass to "Andre datakilder" or drop them.
+Decided in ADR 0003 (2026-11-19): only sources an App can reference directly by URL stay. Kept: Kommunegrænser, Danmarks Miljøportal, MiljøGIS Natura 2000, DMI Open Data and Københavns Kommune. Dropped: Danmarks Statistik, Vejdirektoratet, Overpass API and road noise.

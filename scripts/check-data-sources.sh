@@ -99,6 +99,10 @@ check() {
         { echo "tile $tile_url: $(cat "$work/reason")"; return 1; }
       [ -s "$work/body" ] || { echo "tile $tile_url is empty"; return 1; }
       ;;
+    png)
+      [ "$(head -c 4 "$work/body" | tail -c 3)" = PNG ] ||
+        { echo "response is not a PNG image: $(snippet)"; return 1; }
+      ;;
     *)
       echo "unknown kind $kind"
       return 1
